@@ -18,7 +18,7 @@ interface PlanFormProps {
 }
 
 const input =
-  "w-full bg-white/70 border border-white/80 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:bg-white/90 transition-all";
+  "w-full bg-white/70 border border-gray-300/80 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:bg-white/90 transition-all";
 
 const label = "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5";
 
@@ -142,7 +142,7 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
       <Section title="Daily Schedule" color="text-violet-600 border-violet-100">
         <div className="space-y-3">
           {periods.map((period, index) => (
-            <div key={index} className="bg-white/30 border border-white/50 rounded-xl p-4 space-y-3">
+            <div key={index} className="bg-white/30 border border-gray-200/70 rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-violet-500 uppercase tracking-wider">Period {index + 1}</span>
                 {periods.length > 1 && (
