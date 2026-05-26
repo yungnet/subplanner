@@ -18,4 +18,5 @@ export interface SubPlan {
   studentsToWatch: string;
   endOfDayInstructions: string;
   specialNotes: string;
+  subFeedbackPrompt: string;
 }

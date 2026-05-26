@@ -56,6 +56,9 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
     "Ensure all students have their belongings. Dismiss only after the bell rings."
   );
   const [specialNotes, setSpecialNotes] = useState("");
+  const [subFeedbackPrompt, setSubFeedbackPrompt] = useState(
+    "Thank you for coming in for me today! Please leave me detailed notes about how the day went and include any names of helpful students (or students you think I should know about). You can also send me an email at Jodie.Yung@ecsd.net"
+  );
 
   function updatePeriod(index: number, field: keyof Period, value: string) {
     setPeriods((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
@@ -91,6 +94,7 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
       studentsToWatch,
       endOfDayInstructions,
       specialNotes,
+      subFeedbackPrompt,
     });
   }
 
@@ -221,6 +225,17 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
           value={specialNotes}
           onChange={(e) => setSpecialNotes(e.target.value)}
           placeholder="Lunch codes, allergies, special schedules, fire drill procedure…"
+        />
+      </Section>
+
+      {/* Sub Feedback Prompt */}
+      <Section title="Message for the Sub" color="text-pink-600 border-pink-100">
+        <label className={label}>Printed at the bottom of the plan for the substitute to read</label>
+        <textarea
+          className={input}
+          rows={4}
+          value={subFeedbackPrompt}
+          onChange={(e) => setSubFeedbackPrompt(e.target.value)}
         />
       </Section>
 

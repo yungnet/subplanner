@@ -153,6 +153,13 @@ export default function PlanPreview({ plan, onEdit }: PlanPreviewProps) {
           </div>
         )}
 
+        {/* Message for the Sub */}
+        {plan.subFeedbackPrompt && (
+          <div className="mb-8 border-2 border-pink-200 rounded-xl p-4 bg-pink-50/60 print:bg-white print:border-gray-400">
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{plan.subFeedbackPrompt}</p>
+          </div>
+        )}
+
         {/* Signature line */}
         <div className="border-t border-gray-200 pt-6 mt-8 grid grid-cols-2 gap-8 text-sm">
           <div>
