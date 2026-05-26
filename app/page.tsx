@@ -21,7 +21,7 @@ export default function Home() {
         {/* Page header */}
         <div className="no-print mb-8 text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
-            Sub Plan Generator
+            Mrs. Yung&apos;s Sub Plan Generator 🍎🐱
           </h1>
           <p className="text-gray-500 text-sm mt-2">
             {plan

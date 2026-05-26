@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sub Plan Generator",
+  title: "Mrs. Yung's Sub Plan Generator 🍎🐱",
   description: "Generate printable substitute teacher plans",
 };
 
