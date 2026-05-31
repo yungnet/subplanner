@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { DetectedMaterial, WorksheetType } from "@/types/plan";
+import { AI_MODEL } from "@/lib/ai-model";
 
 interface WorksheetRequest {
   material: DetectedMaterial;
@@ -76,7 +77,7 @@ Return ONLY valid JSON — no markdown, no explanation:
 }`;
 
   const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: AI_MODEL,
     max_tokens: 1800,
     system:
       "You generate printable classroom worksheets. Questions must be clear, grade-appropriate, and specific enough that a substitute teacher can hand them out with no explanation. Return only valid JSON.",

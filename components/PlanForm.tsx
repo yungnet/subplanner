@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DetectedMaterial, GeneratedWorksheet, Period, SubPlan } from "@/types/plan";
+import { AI_MODEL_LABEL } from "@/lib/ai-model";
 
 type AiStatus = "idle" | "loading" | "detecting" | "success" | "not_configured" | "error";
 type WsStatus = "idle" | "loading" | "done" | "error";
@@ -199,6 +200,7 @@ export default function PlanForm({ onGenerate, initialValues, initialWorksheets 
         <div className="flex items-center gap-2.5 border-b border-indigo-100 pb-2.5">
           <h2 className="text-base font-bold text-indigo-600">✨ AI Plan Assistant</h2>
           <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full tracking-wide">Beta</span>
+          <span className="text-xs text-indigo-400/80 ml-0.5">Powered by {AI_MODEL_LABEL}</span>
         </div>
         <p className="text-xs text-indigo-400">
           Describe what you&apos;re teaching and let AI draft the schedule, attendance, and end-of-day fields. It will also detect any worksheets you&apos;d need to print.
