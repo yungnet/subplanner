@@ -3,16 +3,32 @@
 import { useRef, useState } from "react";
 import PlanForm from "@/components/PlanForm";
 import PlanPreview from "@/components/PlanPreview";
-import { SubPlan } from "@/types/plan";
+import { GeneratedWorksheet, SubPlan } from "@/types/plan";
+
+interface SavedPackage {
+  plan: SubPlan;
+  worksheets: GeneratedWorksheet[];
+}
 
 export default function Home() {
   const [plan, setPlan] = useState<SubPlan | null>(null);
+  const [worksheets, setWorksheets] = useState<GeneratedWorksheet[]>([]);
   const [editValues, setEditValues] = useState<SubPlan | undefined>(undefined);
+  const [editWorksheets, setEditWorksheets] = useState<GeneratedWorksheet[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleGenerate(newPlan: SubPlan, newWorksheets: GeneratedWorksheet[]) {
+    setPlan(newPlan);
+    setWorksheets(newWorksheets);
+    setEditValues(undefined);
+    setEditWorksheets([]);
+  }
 
   function handleEdit() {
     setEditValues(plan ?? undefined);
+    setEditWorksheets(worksheets);
     setPlan(null);
+    setWorksheets([]);
   }
 
   function handleOpenSaved() {
@@ -25,9 +41,15 @@ export default function Home() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const loaded = JSON.parse(ev.target?.result as string) as SubPlan;
+        // Support both old format (plain SubPlan) and new format ({ plan, worksheets })
+        const raw = JSON.parse(ev.target?.result as string);
+        const loaded: SavedPackage = "plan" in raw
+          ? raw
+          : { plan: raw as SubPlan, worksheets: [] };
         setEditValues(undefined);
-        setPlan(loaded);
+        setEditWorksheets([]);
+        setPlan(loaded.plan);
+        setWorksheets(loaded.worksheets ?? []);
       } catch {
         alert("Couldn't read that file — make sure it's a saved plan.");
       }
@@ -38,7 +60,7 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-10 px-4">
-      {/* Ambient background blobs */}
+      {/* Ambient blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none" aria-hidden>
         <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-indigo-200/40 rounded-full blur-3xl" />
         <div className="absolute top-1/3 -left-40 w-96 h-96 bg-violet-200/30 rounded-full blur-3xl" />
@@ -46,16 +68,10 @@ export default function Home() {
       </div>
 
       {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".json"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileChange} />
 
       <div className="relative max-w-3xl mx-auto">
-        {/* Page header */}
+        {/* Header */}
         <div className="no-print mb-8">
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
@@ -71,16 +87,14 @@ export default function Home() {
             )}
           </div>
           <p className="text-gray-500 text-sm mt-2">
-            {plan
-              ? "Review and print your substitute teacher plan."
-              : "Fill in the details below to generate a printable substitute teacher plan."}
+            {plan ? "Review and print your substitute teacher plan." : "Fill in the details below to generate a printable substitute teacher plan."}
           </p>
         </div>
 
         {plan ? (
-          <PlanPreview plan={plan} onEdit={handleEdit} />
+          <PlanPreview plan={plan} worksheets={worksheets} onEdit={handleEdit} />
         ) : (
-          <PlanForm onGenerate={setPlan} initialValues={editValues} />
+          <PlanForm onGenerate={handleGenerate} initialValues={editValues} initialWorksheets={editWorksheets} />
         )}
       </div>
     </main>

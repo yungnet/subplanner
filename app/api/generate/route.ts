@@ -32,37 +32,37 @@ export async function POST(req: NextRequest) {
 
   const client = new Anthropic();
 
-  const prompt = `You are helping a ${body.gradeLevel || "elementary"} school teacher named Mrs. Yung prepare a substitute teacher plan for a Canadian classroom (ECSD).
+  const systemPrompt =
+    "You are helping an elementary school teacher write a substitute teacher plan. Your job is to produce clear, simple, structured instructions that a substitute with no knowledge of this classroom can follow confidently. Use short sentences. Break every activity into numbered steps. Be explicit about timing, location of materials, and what the sub should do if students finish early. Assume nothing.";
+
+  const prompt = `Grade: ${body.gradeLevel || "elementary"}. Teacher: Mrs. Yung. School: ECSD (Canadian classroom).
 
 Today's curriculum and lesson context:
 ${body.curriculumNotes}
-${body.toneNotes ? `\nStyle/tone notes from the teacher: ${body.toneNotes}` : ""}
+${body.toneNotes ? `\nTeacher style notes: ${body.toneNotes}` : ""}
 
-Generate a realistic, detailed substitute teacher plan. Return ONLY valid JSON — no markdown, no explanation, just the JSON object — in exactly this format:
+Generate a detailed substitute teacher plan. Return ONLY valid JSON — no markdown, no explanation — in exactly this format:
 
 {
   "periods": [
     {
       "time": "8:30 – 9:15 AM",
       "subject": "Math",
-      "activity": "Step-by-step instructions the substitute can follow without subject expertise. Include page numbers, worksheet names, or specific tasks.",
+      "activity": "Numbered step-by-step instructions the substitute can follow. State where materials are, what students should do, and what to do if they finish early.",
       "location": "Classroom"
     }
   ],
-  "attendance": "Clear instructions for how and when to take attendance.",
-  "endOfDayInstructions": "Step-by-step end-of-day routine.",
-  "specialNotes": "Any relevant reminders (e.g. early lunch, special schedule, allergies to be aware of)."
+  "attendance": "Step-by-step attendance instructions.",
+  "endOfDayInstructions": "Numbered end-of-day routine steps.",
+  "specialNotes": "Any reminders about schedule, allergies, or important classroom info."
 }
 
-Guidelines:
-- Write activity descriptions clearly enough that a non-specialist substitute can follow them confidently
-- Use Canadian English spelling (e.g. "centre", "colour", "programme")
-- Include 4–6 periods matching a typical school day
-- Keep instructions practical and specific — avoid vague phrases like "continue with the lesson"`;
+Use Canadian English. Include 4–6 periods matching a typical school day.`;
 
   const message = await client.messages.create({
     model: "claude-opus-4-5",
     max_tokens: 1500,
+    system: systemPrompt,
     messages: [{ role: "user", content: prompt }],
   });
 
