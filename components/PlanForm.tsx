@@ -15,6 +15,7 @@ const EMPTY_PERIOD: Period = { time: "", subject: "", activity: "", location: ""
 
 interface PlanFormProps {
   onGenerate: (plan: SubPlan) => void;
+  initialValues?: SubPlan;
 }
 
 const input =
@@ -39,25 +40,23 @@ function Section({
   );
 }
 
-export default function PlanForm({ onGenerate }: PlanFormProps) {
-  const [teacherName, setTeacherName] = useState("");
-  const [date, setDate] = useState("");
-  const [gradeLevel, setGradeLevel] = useState("");
-  const [room, setRoom] = useState("");
-  const [emergencyContact, setEmergencyContact] = useState("");
-  const [emergencyPhone, setEmergencyPhone] = useState("");
+export default function PlanForm({ onGenerate, initialValues }: PlanFormProps) {
+  const [date, setDate] = useState(initialValues?.date ?? "");
+  const [gradeLevel, setGradeLevel] = useState(initialValues?.gradeLevel ?? "");
+  const [room, setRoom] = useState(initialValues?.room ?? "");
   const [attendance, setAttendance] = useState(
-    "Take attendance during the first 5 minutes. Mark absences in the grade book on the desk."
+    initialValues?.attendance ?? "Take attendance during the first 5 minutes. Mark absences in the grade book on the desk."
   );
-  const [rules, setRules] = useState<string[]>(DEFAULT_RULES);
-  const [periods, setPeriods] = useState<Period[]>([{ ...EMPTY_PERIOD }]);
-  const [studentsToWatch, setStudentsToWatch] = useState("");
+  const [rules, setRules] = useState<string[]>(initialValues?.classroomRules ?? DEFAULT_RULES);
+  const [periods, setPeriods] = useState<Period[]>(initialValues?.periods ?? [{ ...EMPTY_PERIOD }]);
+  const [studentsToWatch, setStudentsToWatch] = useState(initialValues?.studentsToWatch ?? "");
   const [endOfDayInstructions, setEndOfDayInstructions] = useState(
-    "Ensure all students have their belongings. Dismiss only after the bell rings."
+    initialValues?.endOfDayInstructions ?? "Ensure all students have their belongings. Dismiss only after the bell rings."
   );
-  const [specialNotes, setSpecialNotes] = useState("");
+  const [specialNotes, setSpecialNotes] = useState(initialValues?.specialNotes ?? "");
   const [subFeedbackPrompt, setSubFeedbackPrompt] = useState(
-    "Thank you for coming in for me today! Please leave me detailed notes about how the day went and include any names of helpful students (or students you think I should know about). You can also send me an email at Jodie.Yung@ecsd.net"
+    initialValues?.subFeedbackPrompt ??
+      "Thank you for coming in for me today! Please leave me detailed notes about how the day went and include any names of helpful students (or students you think I should know about). You can also send me an email at Jodie.Yung@ecsd.net"
   );
 
   function updatePeriod(index: number, field: keyof Period, value: string) {
@@ -82,12 +81,9 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     onGenerate({
-      teacherName,
       date,
       gradeLevel,
       room,
-      emergencyContact,
-      emergencyPhone,
       attendance,
       classroomRules: rules.filter((r) => r.trim() !== ""),
       periods,
@@ -104,10 +100,6 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
       <Section title="Basic Info" color="text-indigo-600 border-indigo-100">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={label}>Teacher Name</label>
-            <input className={input} value={teacherName} onChange={(e) => setTeacherName(e.target.value)} placeholder="Ms. Smith" required />
-          </div>
-          <div>
             <label className={label}>Date</label>
             <input type="date" className={input} value={date} onChange={(e) => setDate(e.target.value)} required />
           </div>
@@ -118,20 +110,6 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
           <div>
             <label className={label}>Room Number</label>
             <input className={input} value={room} onChange={(e) => setRoom(e.target.value)} placeholder="Room 204" required />
-          </div>
-        </div>
-      </Section>
-
-      {/* Emergency Contact */}
-      <Section title="Emergency Contact" color="text-rose-600 border-rose-100">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={label}>Contact Name</label>
-            <input className={input} value={emergencyContact} onChange={(e) => setEmergencyContact(e.target.value)} placeholder="Mrs. Johnson (Team Lead)" required />
-          </div>
-          <div>
-            <label className={label}>Phone / Extension</label>
-            <input className={input} value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="x2045 or (555) 555-1234" required />
           </div>
         </div>
       </Section>
@@ -228,7 +206,7 @@ export default function PlanForm({ onGenerate }: PlanFormProps) {
         />
       </Section>
 
-      {/* Sub Feedback Prompt */}
+      {/* Message for the Sub */}
       <Section title="Message for the Sub" color="text-pink-600 border-pink-100">
         <label className={label}>Printed at the bottom of the plan for the substitute to read</label>
         <textarea

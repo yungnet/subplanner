@@ -6,12 +6,9 @@ export interface Period {
 }
 
 export interface SubPlan {
-  teacherName: string;
   date: string;
   gradeLevel: string;
   room: string;
-  emergencyContact: string;
-  emergencyPhone: string;
   attendance: string;
   classroomRules: string[];
   periods: Period[];

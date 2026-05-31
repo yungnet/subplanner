@@ -17,19 +17,36 @@ export default function PlanPreview({ plan, onEdit }: PlanPreviewProps) {
       })
     : "";
 
+  function handleSave() {
+    const filename = `subplan-${plan.date || "draft"}.json`;
+    const blob = new Blob([JSON.stringify(plan, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div>
       {/* Nav buttons */}
-      <div className="no-print flex gap-3 mb-6 justify-end">
+      <div className="no-print flex gap-3 mb-6 justify-end flex-wrap">
         <button
           onClick={onEdit}
-          className="bg-white/50 backdrop-blur-sm border border-white/70 text-gray-700 px-6 py-2.5 rounded-xl font-semibold hover:bg-white/80 transition-all"
+          className="bg-white/50 backdrop-blur-sm border border-white/70 text-gray-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-white/80 transition-all"
         >
           Edit
         </button>
         <button
+          onClick={handleSave}
+          className="bg-white/50 backdrop-blur-sm border border-white/70 text-gray-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-white/80 transition-all"
+        >
+          💾 Save Plan
+        </button>
+        <button
           onClick={() => window.print()}
-          className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200/60 hover:from-indigo-600 hover:to-violet-600 transition-all"
+          className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200/60 hover:from-indigo-600 hover:to-violet-600 transition-all"
         >
           Print
         </button>
@@ -49,7 +66,7 @@ export default function PlanPreview({ plan, onEdit }: PlanPreviewProps) {
         {/* Info grid */}
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-6 text-sm">
           {[
-            ["Teacher", plan.teacherName],
+            ["Teacher", "Mrs. Yung"],
             ["Date", formattedDate],
             ["Grade Level", plan.gradeLevel],
             ["Room", plan.room],
@@ -61,32 +78,13 @@ export default function PlanPreview({ plan, onEdit }: PlanPreviewProps) {
           ))}
         </div>
 
-        {/* Emergency box */}
-        <div className="bg-rose-50/80 border border-rose-200 rounded-xl p-4 mb-6 print:bg-rose-50 print:border-rose-400">
-          <h2 className="text-rose-600 font-bold text-sm mb-2 flex items-center gap-1.5 print:text-gray-900">
-            ⚠ EMERGENCY CONTACT
+        {/* Attendance */}
+        <div className="mb-5">
+          <h2 className="text-sm font-bold text-teal-600 border-b border-teal-100 pb-1 mb-2 print:text-gray-800 print:border-gray-300">
+            Attendance
           </h2>
-          <div className="text-sm space-y-1 text-gray-700">
-            <div className="flex gap-2">
-              <span className="font-semibold shrink-0">Contact:</span>
-              <span>{plan.emergencyContact}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-semibold shrink-0">Phone:</span>
-              <span>{plan.emergencyPhone}</span>
-            </div>
-          </div>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{plan.attendance}</p>
         </div>
-
-        {/* Section helper */}
-        {[
-          { title: "Attendance", color: "text-teal-600 border-teal-100", content: <p className="text-sm text-gray-700 whitespace-pre-wrap">{plan.attendance}</p> },
-        ].map(({ title, color, content }) => (
-          <div key={title} className="mb-5">
-            <h2 className={`text-sm font-bold border-b pb-1 mb-2 print:text-gray-800 print:border-gray-300 ${color}`}>{title}</h2>
-            {content}
-          </div>
-        ))}
 
         {/* Schedule table */}
         <div className="mb-5">
