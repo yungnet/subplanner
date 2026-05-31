@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { SubPlan, Period } from "@/types/plan";
 
+type AiStatus = "idle" | "loading" | "success" | "not_configured" | "error";
+
 const DEFAULT_RULES = [
   "Raise your hand before speaking.",
   "Stay in your seat unless given permission to move.",
@@ -40,6 +42,23 @@ function Section({
   );
 }
 
+const AI_STATUS_UI: Record<AiStatus, { text: string; className: string } | null> = {
+  idle: null,
+  loading: null,
+  success: {
+    text: "✅ Plan fields filled in — review and adjust below.",
+    className: "bg-emerald-50 border border-emerald-200 text-emerald-700",
+  },
+  not_configured: {
+    text: "⚙️ AI generation isn't active yet. Add your ANTHROPIC_API_KEY to .env.local to enable.",
+    className: "bg-amber-50 border border-amber-200 text-amber-700",
+  },
+  error: {
+    text: "❌ Something went wrong. The plan fields were not changed.",
+    className: "bg-rose-50 border border-rose-200 text-rose-700",
+  },
+};
+
 export default function PlanForm({ onGenerate, initialValues }: PlanFormProps) {
   const [date, setDate] = useState(initialValues?.date ?? "");
   const [gradeLevel, setGradeLevel] = useState(initialValues?.gradeLevel ?? "");
@@ -58,6 +77,33 @@ export default function PlanForm({ onGenerate, initialValues }: PlanFormProps) {
     initialValues?.subFeedbackPrompt ??
       "Thank you for coming in for me today! Please leave me detailed notes about how the day went and include any names of helpful students (or students you think I should know about). You can also send me an email at Jodie.Yung@ecsd.net"
   );
+
+  // ── AI assistant state ────────────────────────────────────────────────────
+  const [curriculumNotes, setCurriculumNotes] = useState("");
+  const [toneNotes, setToneNotes] = useState("");
+  const [aiStatus, setAiStatus] = useState<AiStatus>("idle");
+
+  async function handleAiGenerate() {
+    if (!curriculumNotes.trim()) return;
+    setAiStatus("loading");
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ curriculumNotes, gradeLevel, toneNotes }),
+      });
+      if (res.status === 503) { setAiStatus("not_configured"); return; }
+      if (!res.ok) { setAiStatus("error"); return; }
+      const data = await res.json();
+      if (data.periods?.length)         setPeriods(data.periods);
+      if (data.attendance)              setAttendance(data.attendance);
+      if (data.endOfDayInstructions)    setEndOfDayInstructions(data.endOfDayInstructions);
+      if (data.specialNotes)            setSpecialNotes(data.specialNotes);
+      setAiStatus("success");
+    } catch {
+      setAiStatus("error");
+    }
+  }
 
   function updatePeriod(index: number, field: keyof Period, value: string) {
     setPeriods((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
@@ -96,6 +142,71 @@ export default function PlanForm({ onGenerate, initialValues }: PlanFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+
+      {/* ── AI Plan Assistant (Beta) ─────────────────────────────────────── */}
+      <div className="bg-gradient-to-br from-indigo-50/70 to-violet-50/70 backdrop-blur-2xl border border-indigo-200/60 rounded-2xl shadow-lg shadow-indigo-100/20 p-6 space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-2.5 border-b border-indigo-100 pb-2.5">
+          <h2 className="text-base font-bold text-indigo-600">✨ AI Plan Assistant</h2>
+          <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full tracking-wide">
+            Beta
+          </span>
+        </div>
+        <p className="text-xs text-indigo-400">
+          Describe what you&apos;re teaching and let AI draft the schedule, attendance, and end-of-day fields for you. Review and adjust anything it fills in.
+        </p>
+
+        {/* Curriculum notes */}
+        <div>
+          <label className={label}>What are students learning today?</label>
+          <textarea
+            className={`${input} border-indigo-200/80 focus:ring-indigo-300`}
+            rows={4}
+            value={curriculumNotes}
+            onChange={(e) => { setCurriculumNotes(e.target.value); setAiStatus("idle"); }}
+            placeholder={`e.g. Math: Chapter 6 fractions — students should complete pages 112–114 independently. Science: finish the water cycle diagram started yesterday. Gym at 1:30 with Mr. Tanaka.`}
+          />
+        </div>
+
+        {/* Tone notes */}
+        <div>
+          <label className={label}>Style notes for the AI <span className="normal-case font-normal text-gray-400">(optional)</span></label>
+          <input
+            className={`${input} border-indigo-200/80 focus:ring-indigo-300`}
+            value={toneNotes}
+            onChange={(e) => setToneNotes(e.target.value)}
+            placeholder="e.g. Keep instructions very simple, this class needs lots of structure"
+          />
+        </div>
+
+        {/* Status message */}
+        {AI_STATUS_UI[aiStatus] && (
+          <p className={`text-xs rounded-xl px-4 py-2.5 ${AI_STATUS_UI[aiStatus]!.className}`}>
+            {AI_STATUS_UI[aiStatus]!.text}
+          </p>
+        )}
+
+        {/* Generate button */}
+        <button
+          type="button"
+          onClick={handleAiGenerate}
+          disabled={aiStatus === "loading" || !curriculumNotes.trim()}
+          className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white py-2.5 rounded-xl font-semibold shadow-md shadow-indigo-200/50 hover:from-indigo-600 hover:to-violet-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {aiStatus === "loading" ? (
+            <>
+              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              Generating…
+            </>
+          ) : (
+            "✨ Generate with AI"
+          )}
+        </button>
+      </div>
+
       {/* Basic Info */}
       <Section title="Basic Info" color="text-indigo-600 border-indigo-100">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
