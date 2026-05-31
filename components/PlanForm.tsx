@@ -63,6 +63,7 @@ export default function PlanForm({ onGenerate, initialValues, initialWorksheets 
   const [curriculumNotes, setCurriculumNotes] = useState("");
   const [toneNotes, setToneNotes] = useState("");
   const [aiStatus, setAiStatus] = useState<AiStatus>("idle");
+  const [aiErrorDetail, setAiErrorDetail] = useState("");
 
   // Materials detection
   const [detectedMaterials, setDetectedMaterials] = useState<DetectedMaterial[]>([]);
@@ -88,6 +89,7 @@ export default function PlanForm({ onGenerate, initialValues, initialWorksheets 
   async function handleAiGenerate() {
     if (!curriculumNotes.trim()) return;
     setAiStatus("loading");
+    setAiErrorDetail("");
     setDetectedMaterials([]);
     setDetectDone(false);
 
@@ -99,7 +101,12 @@ export default function PlanForm({ onGenerate, initialValues, initialWorksheets 
       });
 
       if (res.status === 503) { setAiStatus("not_configured"); return; }
-      if (!res.ok) { setAiStatus("error"); return; }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setAiErrorDetail(errData.detail ?? errData.error ?? `HTTP ${res.status}`);
+        setAiStatus("error");
+        return;
+      }
 
       const data = await res.json();
       if (data.periods?.length) setPeriods(data.periods);
@@ -231,6 +238,9 @@ export default function PlanForm({ onGenerate, initialValues, initialWorksheets 
         {aiStatus !== "idle" && aiStatus !== "loading" && aiStatus !== "detecting" && AI_STATUS_UI[aiStatus] && (
           <p className={`text-xs rounded-xl px-4 py-2.5 ${AI_STATUS_UI[aiStatus]!.className}`}>
             {AI_STATUS_UI[aiStatus]!.text}
+            {aiStatus === "error" && aiErrorDetail && (
+              <span className="block mt-1 opacity-75 font-mono break-all">{aiErrorDetail}</span>
+            )}
           </p>
         )}
 

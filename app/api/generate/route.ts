@@ -60,12 +60,19 @@ Generate a detailed substitute teacher plan. Return ONLY valid JSON — no markd
 
 Use Canadian English. Include 4–6 periods matching a typical school day.`;
 
-  const message = await client.messages.create({
-    model: AI_MODEL,
-    max_tokens: 1500,
-    system: systemPrompt,
-    messages: [{ role: "user", content: prompt }],
-  });
+  let message: Awaited<ReturnType<typeof client.messages.create>>;
+  try {
+    message = await client.messages.create({
+      model: AI_MODEL,
+      max_tokens: 1500,
+      system: systemPrompt,
+      messages: [{ role: "user", content: prompt }],
+    });
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    console.error("[generate] Anthropic API error:", detail);
+    return NextResponse.json({ error: "ANTHROPIC_ERROR", detail }, { status: 502 });
+  }
 
   const content = message.content[0];
   if (content.type !== "text") {
