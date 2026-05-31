@@ -2,6 +2,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { AI_MODEL } from "@/lib/ai-model";
 
+// Vercel Pro allows up to 300s; Hobby is capped at 10s but setting this
+// prevents an immediate 5s default and signals intent on paid plans.
+export const maxDuration = 60;
+
 export interface GenerateRequest {
   curriculumNotes: string;
   gradeLevel: string;
@@ -82,13 +86,23 @@ Use Canadian English. Include 4–6 periods matching a typical school day.`;
   // Extract JSON — Claude sometimes wraps it in a code fence even when asked not to
   const jsonMatch = content.text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    return NextResponse.json({ error: "PARSE_ERROR" }, { status: 500 });
+    const preview = content.text.slice(0, 300);
+    console.error("[generate] No JSON in response. Raw:", preview);
+    return NextResponse.json(
+      { error: "PARSE_ERROR", detail: `No JSON found. Claude said: ${preview}` },
+      { status: 500 }
+    );
   }
 
   try {
     const generated: GenerateResponse = JSON.parse(jsonMatch[0]);
     return NextResponse.json(generated);
-  } catch {
-    return NextResponse.json({ error: "PARSE_ERROR" }, { status: 500 });
+  } catch (err) {
+    const preview = jsonMatch[0].slice(0, 300);
+    console.error("[generate] JSON.parse failed:", err, "Raw match:", preview);
+    return NextResponse.json(
+      { error: "PARSE_ERROR", detail: `Invalid JSON. Raw: ${preview}` },
+      { status: 500 }
+    );
   }
 }
