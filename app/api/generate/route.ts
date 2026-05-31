@@ -68,7 +68,7 @@ Use Canadian English. Include 4–6 periods matching a typical school day.`;
   try {
     message = await client.messages.create({
       model: AI_MODEL,
-      max_tokens: 1500,
+      max_tokens: 3000,
       system: systemPrompt,
       messages: [{ role: "user", content: prompt }],
     });
