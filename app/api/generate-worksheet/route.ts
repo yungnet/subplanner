@@ -76,7 +76,7 @@ Return ONLY valid JSON — no markdown, no explanation:
 }`;
 
   const message = await client.messages.create({
-    model: "claude-opus-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 1800,
     system:
       "You generate printable classroom worksheets. Questions must be clear, grade-appropriate, and specific enough that a substitute teacher can hand them out with no explanation. Return only valid JSON.",

@@ -51,7 +51,7 @@ Return ONLY valid JSON. If nothing is needed, return { "materials": [] }.
 }`;
 
   const message = await client.messages.create({
-    model: "claude-opus-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 600,
     system:
       "You are an assistant that reviews substitute teacher plans and identifies missing printed materials. Be concise. Only flag items the teacher genuinely needs to create. Return valid JSON only.",

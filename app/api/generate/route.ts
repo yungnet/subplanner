@@ -60,7 +60,7 @@ Generate a detailed substitute teacher plan. Return ONLY valid JSON — no markd
 Use Canadian English. Include 4–6 periods matching a typical school day.`;
 
   const message = await client.messages.create({
-    model: "claude-opus-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 1500,
     system: systemPrompt,
     messages: [{ role: "user", content: prompt }],
